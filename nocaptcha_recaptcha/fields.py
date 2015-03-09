@@ -53,8 +53,11 @@ class NoReCaptchaField(forms.CharField):
             if 'request' in f.f_locals:
                 request = f.f_locals['request']
                 if request:
-                    remote_ip = request.META.get('REMOTE_ADDR', '')
-                    forwarded_ip = request.META.get('HTTP_X_FORWARDED_FOR', '')
+                    remote_ip = request.remote_ip
+                    try:
+                        forwarded_ip = request.headers['HTTP_X_FORWARDED_FOR']
+                    except:
+                        forwarded_ip = None
                     ip = remote_ip if not forwarded_ip else forwarded_ip
                     return ip
             f = f.f_back

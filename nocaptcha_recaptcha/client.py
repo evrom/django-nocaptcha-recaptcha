@@ -1,7 +1,7 @@
 import logging
-
+import jinja2
 import django
-
+import os
 if django.VERSION[1] >= 5:
     import json
 else:
@@ -14,6 +14,13 @@ from django.utils.encoding import force_text
 
 from ._compat import want_bytes, urlencode, Request, urlopen, PY2
 
+file_directory = os.path.dirname(__file__)
+template_directory = os.path.join(file_directory, './templates/')
+
+env = jinja2.Environment(
+    loader=jinja2.FileSystemLoader(template_directory),
+    autoescape=True,
+)
 logger = logging.getLogger(__name__)
 
 DEFAULT_VERIFY_URL = "https://www.google.com/recaptcha/api/siteverify"
@@ -45,13 +52,13 @@ def displayhtml(site_key, gtag_attrs, js_params):
     if 'hl' not in js_params:
         js_params['hl'] = get_language()[:2]
 
-    return render_to_string(
-        WIDGET_TEMPLATE,
-        {
-            'fallback_url': FALLBACK_URL,
-            'site_key': site_key,
-            'js_params': js_params,
-            'gtag_attrs': gtag_attrs,
+    # return 'hi'
+    template = env.get_or_select_template('widget.html')
+    return template.render({
+        'fallback_url': FALLBACK_URL,
+        'site_key': site_key,
+        'js_params': js_params,
+        'gtag_attrs': gtag_attrs,
         })
 
 
